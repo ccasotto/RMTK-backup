@@ -68,7 +68,7 @@ cd = os.getcwd()
 # N: number of points per segment od IDa curve derived with spo2ida
 # MC: number of Monte Carlo simulations to account for uncertainty in damage thresholds
 
-an_type = 2
+an_type = 1
 in_type = 1
 vulnerability = 0
 g = 9.81
