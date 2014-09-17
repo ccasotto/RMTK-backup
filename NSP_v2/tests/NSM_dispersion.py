@@ -68,8 +68,8 @@ cd = os.getcwd()
 # MC: number of Monte Carlo simulations to account for uncertainty in damage thresholds
 
 an_type = 0
-in_type = 0
-vulnerability = 0
+in_type = 1
+vulnerability = 1
 g = 9.81
 iml = np.linspace(0.1,2,50)
 
