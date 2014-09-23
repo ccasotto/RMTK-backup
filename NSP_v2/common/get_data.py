@@ -9,6 +9,7 @@ import matplotlib.pyplot as plt
 from idealisation import bilinear
 from idealisation import quadrilinear
 from assign_damage import assign_damage
+from common.conversions import get_spectral_ratios
 import os
 import csv
 
@@ -159,30 +160,10 @@ def read_data(in_type,an_type,linew,fontsize,units,flag):
         T = [float(ele[1]) for ele in newlist[1:]] # First period
         Gamma = [float(ele[2]) for ele in newlist[1:]] # First modal participation factor normalised with respect to the top displ.
         w = [float(ele[3]) for ele in newlist[1:]]# weight assigned to each building if multiple buildings are input
-        
-    return [T, Gamma, w, dcroof, SPO, bUthd, noBlg]
-
-def assign_damage(limits,disp,H,noStorey):
-    # Limits state definition
-    # Assign damage state to each analysis
-    disp.insert(0, np.zeros_like(disp[0]))
-    H.insert(0, float(0))
-    I = []
-    for ls in range(0,len(limits)):
-        for i in range(0,noStorey):
-            a = np.divide(np.array(disp[i+1])-np.array(disp[i]),H[i+1]) #convert displacement to inter-storey-drift
-            b = np.nonzero(a>limits[ls]) # find where drifts exceed limit states
-            if len(b[0]) == 0: 
-                find = len(a)-1
-            else:
-                find = b[0][0]
-            I.append(find)
-
-    LS_index = zip(*[iter(I)]*noStorey)
-    LS_global = [min(ele) for ele in LS_index]
-    disp_profile = np.empty([noStorey,len(limits)])
-    for i in range(0,noStorey):
-        disp_profile[i,:] = [disp[i+1][ele] for ele in LS_global]
-    disp_profile = disp_profile.tolist()
-#    
-    return [disp_profile]
+    
+    # Obtain ratios between spectral acceleration at average period and spectral accelerations 
+    # at the period of each building, in order to produce fragility and vulnerability with a common IM
+    # and to be able to combine them
+    Tav = np.average(np.array(T),weights = w) # average period
+    Sa_ratios = get_spectral_ratios(Tav,T) # ratios
+    return [T, Gamma, w, dcroof, SPO, bUthd, noBlg, Tav, Sa_ratios]
