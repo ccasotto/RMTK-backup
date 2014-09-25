@@ -42,7 +42,7 @@ def fragility_process(vulnerability,an_type,T, Gamma, w, dcroof, SPO, bUthd, noB
         for i in range(0,len(dcroof[0])):
             SaLS = [ele[i] for ele in allSa]
             StdSaLS = [ele[i] for ele in allbTSa]
-            log_meanSa.append(np.average(SaLS,weights = w)) # weighted log-mean
+            log_meanSa.append(np.average(SaLS,weights = w)) # weighted log-mean mean(log(Sa))
             log_stSa.append(np.sqrt(np.sum(w*(np.power((SaLS-log_meanSa[i]),2)+np.power(StdSaLS,2))))) # weighted log-std (dispersion)
 
     return [log_meanSa, log_stSa]
