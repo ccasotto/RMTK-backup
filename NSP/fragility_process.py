@@ -27,9 +27,9 @@ def fragility_process(vulnerability,an_type,T, Gamma, w, dcroof, SPO, bUthd, noB
             [SaT50,bTSa] = DFfragility(T[blg], Gamma[blg], dcroof[blg], SPO[blg], bUthd[blg], mc, r, g, Tc, Td)
         else: # Vamvatsikos and Cornell's method
             [mc,a,ac,r,mf] = get_spo2ida_parameters(SPO[blg], T[blg], Gamma[blg]) # Convert MDoF into SDoF
-            [idacm, idacr] = spo2ida_allT(mc,a,ac,r,mf,T[blg],pw,plotflag[0][1],filletstyle,N,linew,fontsize) # apply SPO2IDA procedure
+            [idacm, idacr] = spo2ida_allT(mc,a,ac,r,mf,T[blg],pw,plotflag[1],filletstyle,N,linew,fontsize) # apply SPO2IDA procedure
             [SaT50,bTSa] = spo2ida(idacm, idacr, mf, T[blg], Gamma[blg], g, dcroof[blg], SPO[blg], bUthd[blg], MC)
-        
+
         # Converting the Sa(T1) to Sa(Tav), the common IM
         SaTlogmean_av, bTSa_av = np.log(SaT50)*Sa_ratios[blg], np.array(bTSa)*Sa_ratios[blg]
         allSa.append(SaTlogmean_av)

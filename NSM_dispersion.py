@@ -54,7 +54,7 @@ cd = os.getcwd()
 
 # <codecell>
 
-an_type = 2
+an_type = 1
 in_type = 1
 
 # <markdowncell>
@@ -69,7 +69,7 @@ in_type = 1
 
 # <codecell>
 
-vuln = 1
+vuln = 0
 g = 9.81
 iml = np.linspace(0.1,2,50)
 
@@ -88,7 +88,7 @@ iml = np.linspace(0.1,2,50)
 
 # <codecell>
 
-plotflag = [1, 1, 1, 1]
+plotflag = [1, 1, 0, 0]
 linew = 2
 fontsize = 10
 units = ['[m]', '[kN]', '[g]']

@@ -128,14 +128,15 @@ def read_data(in_type,an_type,linew,fontsize,units,flag):
             dmin = [float(ele[3]) for ele in newlist[1:]]
             du = [float(ele[4]) for ele in newlist[1:]]
             Fy = [float(ele[5]) for ele in newlist[1:]]
-            Fmin = [float(ele[6]) for ele in newlist[1:]]
+            Fmax = [float(ele[6]) for ele in newlist[1:]]
+            Fmin = [float(ele[7]) for ele in newlist[1:]]
             noBlg = len(dy)
             for blg in range(0,noBlg):
-                SPO.append([dy[blg], ds[blg], dmin[blg], du[blg], Fy[blg], Fmin[blg]])
+                SPO.append([dy[blg], ds[blg], dmin[blg], du[blg], Fy[blg], Fmax[blg], Fmin[blg]])
             if flag:
                 for i in range(0,noBlg):
                     x = np.array([0, dy[i], ds[i], dmin[i], du[i]])
-                    y = np.array([0, Fy[i], Fy[i], Fmin[i], Fmin[i]])
+                    y = np.array([0, Fy[i], Fmax[i], Fmin[i], Fmin[i]])
                     plt.plot(x,y,color='b',marker = 'o', label='quadrilinear input '+str(i),linewidth = linew)
                 
                 plt.xlabel('roof displacment, droof '+units[0],fontsize=fontsize)
