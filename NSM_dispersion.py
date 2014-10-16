@@ -88,7 +88,7 @@ iml = np.linspace(0.1,2,50)
 
 # <codecell>
 
-plotflag = [1, 1, 0, 0]
+plotflag = [1, 0, 1, 1]
 linew = 2
 fontsize = 10
 units = ['[m]', '[kN]', '[g]']
@@ -145,6 +145,6 @@ if vuln == 1:
     [LR50, bLR] = vulnerability_process(vuln, an_type, T, Gamma, w, dcroof, SPO, bUthd, noBlg, g, MC, Sa_ratios, plot_feature, N, Tc, Td)
     export_vulnerability(vuln, plot_feature, LR50, bLR)
 
-
+# <codecell>
 
 

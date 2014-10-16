@@ -14,7 +14,7 @@ def damage_to_loss(SaT,bTSa,iml,proc):
     # INPUT: SaT is the mean log(iml), bTSa is the dispersion, std(log(iml))
     # Input consequence functions. The number of damage state considered should
     # be the same in both fragility and consequence. 
-    input2 = cd+'/inputs/consequence.csv'
+    input2 = cd+'/NSP/inputs/consequence.csv'
     with open(input2, 'rb') as f:
         data = f.read()
         l = data.rstrip()

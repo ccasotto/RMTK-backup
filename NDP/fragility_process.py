@@ -22,7 +22,7 @@ def count_to_poe(dcm,totblg):
             fr = fr.__abs__()
     return [fr]
     
-def fragility_process(dcm,totblg,im,noLS):
+def fragility_process(dcm,totblg,im,noLS, g):
     
     [fr] = count_to_poe(dcm,totblg)
     
@@ -53,13 +53,13 @@ def fragility_process(dcm,totblg,im,noLS):
         nc = dint.transpose()
         num_collapse = nc.tolist()
         IML = [IM[i,0,0] for i in range(0,len(IM))]
-        [mu, sigma]=mle(num_collapse, IML, totblg)
+        [mu, sigma]=mle(num_collapse, IML, totblg, g)
         log_meanSa.append(mu)
         log_stSa.append(sigma)
         
         print "LS", j
-        print "mu=",mu
-        print "sigma=",sigma
+        print "theta=",np.exp(mu)
+        print "beta=",sigma
         
     return [log_meanSa, log_stSa, FR, IML]
     

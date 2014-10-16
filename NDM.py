@@ -51,6 +51,9 @@ in_type = 0
 # 0: derive fragility curves <br />
 # 1: derive vulnerability curves from fragility curves <br />
 # 
+# >####g
+# value of g (gravity acceleration) expressed in the units used for the intensity measure
+# 
 # >####iml
 # array of intensity measure level used to discretise the fragility curves and get discrete vulnerability curves
 # >####plotflag
@@ -67,6 +70,7 @@ in_type = 0
 # <codecell>
 
 vuln = 0
+g = 9.81
 plotflag = [1, 1]
 iml = np.linspace(0.1, 400, 100)
 IMlabel = ['m/s$^{2}$']
@@ -98,7 +102,7 @@ plot_feature = [plotflag, linew, fontsize, IMlabel, iml]
 
 # <codecell>
 
-[log_meanSa,log_stSa, FR, IML] = fragility_process(dcm,totblg,im,noLS)
+[log_meanSa,log_stSa, FR, IML] = fragility_process(dcm,totblg,im,noLS,g)
 
 # <headingcell level=3>
 
