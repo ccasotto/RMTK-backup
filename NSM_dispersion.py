@@ -54,7 +54,7 @@ cd = os.getcwd()
 
 # <codecell>
 
-an_type = 1
+an_type = 0
 in_type = 1
 
 # <markdowncell>
@@ -69,7 +69,7 @@ in_type = 1
 
 # <codecell>
 
-vuln = 0
+vuln = 1
 g = 9.81
 iml = np.linspace(0.1,2,50)
 
@@ -88,7 +88,7 @@ iml = np.linspace(0.1,2,50)
 
 # <codecell>
 
-plotflag = [1, 0, 1, 1]
+plotflag = [0, 0, 1, 1]
 linew = 2
 fontsize = 10
 units = ['[m]', '[kN]', '[g]']
@@ -133,7 +133,7 @@ plot_feature = [plotflag, linew, fontsize, units, iml]
 
 if vuln == 0:
     [log_meanSa, log_stSa] = fragility_process(vuln, an_type, T, Gamma, w, dcroof, SPO, bUthd, noBlg, g, MC, Sa_ratios, plot_feature, N, Tc, Td)
-    export_fragility(vuln, plot_feature, log_meanSa, log_stSa)
+    export_fragility(vuln, plot_feature, log_meanSa, log_stSa,'on')
 
 # <headingcell level=2>
 

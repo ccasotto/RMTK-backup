@@ -86,13 +86,13 @@ def read_data(in_type,an_type,linew,fontsize,units,flag):
         # Bilinearisation of the pushover curve and plot
             SPO = []
             for blg in range(0,noBlg):
-                [dy,du,Fy] = bilinear(droof[blg],R[blg],flag,linew,fontsize,units)
+                [dy,du,Fy] = bilinear(droof[blg],R[blg],flag,linew,fontsize,units, blg)
                 SPO.append([dy,du,Fy]) # yielding disp., ultimate disp., yielding force
         else: # Any pushover shape
             # Quadrilinearisation of the pushover curve and plot
             SPO = []
             for blg in range(0,noBlg):
-                [dy,ds,dmin,du,Fy,Fmax,Fmin] = quadrilinear(droof[blg],R[blg],flag,linew,fontsize,units)
+                [dy,ds,dmin,du,Fy,Fmax,Fmin] = quadrilinear(droof[blg],R[blg],flag,linew,fontsize,units, blg)
                 SPO.append([dy,ds,dmin,du,Fy,Fmax,Fmin]) # yielding, start of softening, start of plateu, ultimate disp. and # yielding, start of softening, start of plateu, base shears
     else:
         input1 = cd+'/NSP/inputs/idealised_curve.csv' # idealised Base shear [kN] vs top displacement [m]

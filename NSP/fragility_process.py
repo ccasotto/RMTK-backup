@@ -11,12 +11,12 @@ from NSP.simplified_method import simplified_bilinear
 from NSP.DF_method import DFfragility
 from NSP.spo2ida_based.spo2ida_allTfunction import spo2ida_allT
 from NSP.spo2ida_based.get_spo2ida_parameters import get_spo2ida_parameters
-
+from NSP.export_fragility import plot_fragility
 pw = 1
 filletstyle = 3
 
 def fragility_process(vulnerability,an_type,T, Gamma, w, dcroof, SPO, bUthd, noBlg, g, MC, Sa_ratios, plot_feature, N, Tc, Td):
-    plotflag, linew, fontsize = plot_feature[0:3]
+    plotflag, linew, fontsize, units, iml = plot_feature[0:5]
     allSa, allbTSa, allLR50, allbLR = [],[],[],[]     
     for blg in range(0,noBlg):
         # Derive median Sa value (median of Sa) of capacity for each Limit State and corresponding overall dispersion std(log(Sa))
@@ -29,9 +29,11 @@ def fragility_process(vulnerability,an_type,T, Gamma, w, dcroof, SPO, bUthd, noB
             [mc,a,ac,r,mf] = get_spo2ida_parameters(SPO[blg], T[blg], Gamma[blg]) # Convert MDoF into SDoF
             [idacm, idacr] = spo2ida_allT(mc,a,ac,r,mf,T[blg],pw,plotflag[1],filletstyle,N,linew,fontsize) # apply SPO2IDA procedure
             [SaT50,bTSa] = spo2ida(idacm, idacr, mf, T[blg], Gamma[blg], g, dcroof[blg], SPO[blg], bUthd[blg], MC)
-
+        
         # Converting the Sa(T1) to Sa(Tav), the common IM
         SaTlogmean_av, bTSa_av = np.log(SaT50)*Sa_ratios[blg], np.array(bTSa)*Sa_ratios[blg]
+        if blg<20:
+            plot_fragility(iml,np.exp(SaTlogmean_av),bTSa_av,0.5,fontsize,units,'off')
         allSa.append(SaTlogmean_av)
         allbTSa.append(bTSa_av)
 

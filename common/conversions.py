@@ -25,7 +25,7 @@ def from_mean_to_median(Samean, StdSa):
 
 def get_spectral_ratios(Tuni,T):
     cd = os.getcwd()
-    input = cd+'/common/FEMAP965spectrum.txt'
+    input = cd+'/common/CHIARAspectrum.txt'
     with open(input, 'rb') as f:
         data = f.read()
         l = data.rstrip()
