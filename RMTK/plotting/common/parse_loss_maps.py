@@ -76,7 +76,7 @@ def parse_single_loss_node(element):
                 loss = e.attrib.get('mean')
             else:
                 loss = e.attrib.get('value')
-            values.append([ref,lon,lat,loss])
+            values.append([ref,lon,lat,float(loss)])
         else:
             continue
             
@@ -106,8 +106,9 @@ def LossMapParser(input_file):
         if element.tag == '%slossMap' % xmlNRML:
             meta_info = parse_metadata(element)
         elif element.tag == '%snode' % xmlNRML:
-            value = parse_single_loss_node(element)
-            values.append(value)
+            subValues = parse_single_loss_node(element)
+            for value in subValues:
+                values.append(value)
         else:
             continue
     
@@ -118,12 +119,11 @@ def aggLossMapLosses(values):
     uniqueLocations = []
     agg_losses = []
     for value in values:
-        for subvalue in value:
-            if str(subvalue[1])+','+str(subvalue[2]) not in uniqueLocations:
-                uniqueLocations.append(str(subvalue[1])+','+str(subvalue[2]))
-                agg_losses.append(0)
-            idx = uniqueLocations.index(str(subvalue[1])+','+str(subvalue[2]))
-            agg_losses[idx]=agg_losses[idx]+float(subvalue[3])
+        if value[1:3] not in uniqueLocations:
+            uniqueLocations.append(value[1:3])
+            agg_losses.append(0)
+        idx = uniqueLocations.index(value[1:3])
+        agg_losses[idx]=agg_losses[idx]+float(value[3])
         
     return uniqueLocations, agg_losses
     
@@ -136,7 +136,8 @@ def parse_risk_maps(nrml_loss_map,agg_losses,save_flag):
 		output_file = open(nrml_loss_map.replace('xml','csv'),'w')        
 		for inode in range(len(values)):
 			for iasset in range(len(values[inode])):
-				output_file.write(values[inode][iasset][0]+','+str(values[inode][iasset][1])+','+str(values[inode][iasset][2])+','+str(values[inode][iasset][3])+'\n')
+				output_file.write(values[inode][iasset][0]+','+str(values[inode][iasset][1])+','+
+					str(values[inode][iasset][2])+','+str(values[inode][iasset][3])+'\n')
 		output_file.close()
 
 	if agg_losses:
@@ -178,7 +179,6 @@ def set_up_arg_parser():
         required=False)
 
     return parser
-
 
 if __name__ == "__main__":
 

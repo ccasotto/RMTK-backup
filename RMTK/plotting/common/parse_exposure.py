@@ -69,7 +69,7 @@ def exposureModelParser(input_file):
 	
 	return id_taxonomies
     
-def extractTaxonomies(nrml_exposure_model,save_flag):
+def extractIDTaxonomies(nrml_exposure_model,save_flag):
 	'''
 	Extracts the taxonomies fro ma exposure model and save
 	to a text file if save_flag
@@ -115,4 +115,4 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     if args.input_file:
-        extractTaxonomies(args.input_file,args.save)
+        extractIDTaxonomies(args.input_file,args.save)
