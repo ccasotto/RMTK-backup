@@ -23,32 +23,39 @@ def parse_taxonomy_file(taxonomy_file):
     file.close()
     return taxonomy_list
 
-def plot_damage_dist(damage_file, taxonomy_list=[], log_scale_x=True, log_scale_y=True, export_png=False):
+def plot_damage_dist(damage_file, taxonomy_list=[], plot_3d=False, export_png=False):
     '''
     Plots the damage distribution for the specified taxonomies
     '''
-    metadata, asset_refs, damage_dist = parsedd.parse_damage_file(damage_file)
+    taxonomies, damage_states, damage_dist_tax = parsedd.parse_damage_file(damage_file)
+    print damage_states
     if taxonomy_list:
-        asset_refs = taxonomy_list
-    for ref in asset_refs:
-        loss, poe = damage_dist[ref]
+        taxonomies = taxonomy_list
+    for tax in taxonomies:
+        means = []
+        stddevs = []
+        damage_dist = damage_dist_tax[tax]
+        for ds in damage_states:
+            dd = damage_dist[ds]
+            means.append(dd[0])
+            stddevs.append(dd[1])
         fig = pyplot.figure(figsize = (16, 9))
-        if log_scale_x:
-            if log_scale_y:
-                pyplot.loglog(loss, poe, '-r', linewidth = 2, label = 'Asset ' + ref)
-            else:
-                pyplot.semilogx(loss, poe, '-r', linewidth = 2, label = 'Asset ' + ref)
-        elif log_scale_y:
-            pyplot.semilogy(loss, poe, '-r', linewidth = 2, label = 'Asset ' + ref)
-        else:
-            pyplot.plot(loss, poe, '-r', linewidth = 2, label = ref)
-        pyplot.title('Loss curve (' + metadata['lossType'] + ' losses)', fontsize = 20)
-        pyplot.legend(loc = "upper right", bbox_to_anchor = (1,1))
-        pyplot.xlabel('Loss (' + metadata['unit'] + ')', fontsize = 16)
-        pyplot.ylabel('Probability of exceedance in ' + metadata['investigationTime'] + ' years', fontsize = 16)
-        pyplot.grid(b=None, which='major', axis='both', color='LightGray', linestyle='--', linewidth=.5)
+
+        N = len(damage_states)
+        ind = np.arange(N)  # the x locations for the groups
+        error_config = {'ecolor': '0.3', 'linewidth': '2'}
+        bar_width = 0.3
+        padding_left = 0
+        pyplot.bar(ind+padding_left, height=means, width=bar_width, yerr=stddevs, error_kw=error_config, color='IndianRed', linewidth=1.5)
+        pyplot.title('Damage distribution (' + tax + ')', fontsize = 20)
+        pyplot.xlabel('Damage state', fontsize = 16)
+        pyplot.ylabel('Number of assets in damage state', fontsize = 16)
+        pyplot.xticks(ind+padding_left+bar_width/2., damage_states)
+        pyplot.margins(.25,0)
         if export_png:
-            pyplot.savefig(ref, format = 'png')
+            pyplot.savefig(tax, format = 'png')
+        pyplot.show()
+        pyplot.clf()
 
 def set_up_arg_parser():
     """
