@@ -29,10 +29,24 @@ def build_map(plotting_type,risk_map,bounding_box,log_scale,exposure_model,marke
         individualLosses = data[0]
         idTaxonomies = np.array(parsee.extractIDTaxonomies(exposure_path,False))
         uniqueTaxonomies = extractUniqueTaxonomies(idTaxonomies[:,1])
+        lossesTaxonomies = np.zeros((len(uniqueTaxonomies)))
         for i in range(len(uniqueTaxonomies)):
             locations,losses = processLosses(uniqueTaxonomies[i],idTaxonomies,individualLosses)
+            lossesTaxonomies[i] = sum(losses)
             if locations.shape[0] > 0:
                 plot_single_map(locations,losses,box,log_scale,marker_size,'Loss map for '+uniqueTaxonomies[i],i+2)
+	plot_pie_chart_losses(uniqueTaxonomies,lossesTaxonomies)
+
+def plot_pie_chart_losses(uniqueTaxonomies,lossesTaxonomies):
+
+    labels = uniqueTaxonomies
+    sizes = lossesTaxonomies
+    colors = ['yellowgreen', 'gold', 'lightskyblue', 'lightcoral']
+
+    plt.pie(sizes, labels=labels, autopct='%1.1f%%', shadow=True, startangle=90)
+    plt.title('Total loss per taxonomy')
+    plt.legend(bbox_to_anchor=(1.05, 1), loc=2, borderaxespad=0.)
+    plt.axis('equal')
 
 def define_bounding_box(bounding_box,data):
 
