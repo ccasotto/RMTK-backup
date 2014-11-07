@@ -54,7 +54,7 @@ cd = os.getcwd()
 
 # <codecell>
 
-an_type = 0
+an_type = 1
 in_type = 1
 
 # <markdowncell>
@@ -71,7 +71,7 @@ in_type = 1
 
 vuln = 1
 g = 9.81
-iml = np.linspace(0.1,2,50)
+iml = np.linspace(0.001,3.5,25)
 
 # <markdowncell>
 

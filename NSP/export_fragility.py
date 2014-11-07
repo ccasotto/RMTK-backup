@@ -35,7 +35,11 @@ def plot_fragility(iml,Sa50,bTSa,linew,fontsize,units,leg):
     txt = []
     for q in range(0,len(Sa50)):
         txt.append('Damage State '+str(q+1))
-        y = stat.norm(np.log(Sa50[q]),bTSa[q]).cdf(np.log(iml))
+        if bTSa[q] <= 0:
+            y = np.zeros_like(iml)
+            y[iml>Sa50[q]] = 1
+        else:
+            y = stat.norm(np.log(Sa50[q]),bTSa[q]).cdf(np.log(iml))
         if leg == 'off':
             plt.plot(iml,y,'--',color=colours[q],linewidth=linew)
         else:
