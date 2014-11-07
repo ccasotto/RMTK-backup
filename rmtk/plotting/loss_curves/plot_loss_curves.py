@@ -1,6 +1,5 @@
 '''
-Post-process risk calculation data to convert loss curves into different
-formats
+Post-process risk calculation data to plot loss curves
 '''
 
 import os
@@ -36,13 +35,13 @@ def plot_loss_curves(loss_file, assets_list=[], log_scale_x=True, log_scale_y=Tr
         fig = pyplot.figure(figsize = (16, 9))
         if log_scale_x:
             if log_scale_y:
-                pyplot.loglog(loss, poe, '-r', linewidth = 2, label = 'Asset ' + ref)
+                pyplot.loglog(loss, poe, '-', color='IndianRed', linewidth = 2, label = 'Asset ' + ref)
             else:
-                pyplot.semilogx(loss, poe, '-r', linewidth = 2, label = 'Asset ' + ref)
+                pyplot.semilogx(loss, poe, '-', color='IndianRed', linewidth = 2, label = 'Asset ' + ref)
         elif log_scale_y:
-            pyplot.semilogy(loss, poe, '-r', linewidth = 2, label = 'Asset ' + ref)
+            pyplot.semilogy(loss, poe, '-', color='IndianRed', linewidth = 2, label = 'Asset ' + ref)
         else:
-            pyplot.plot(loss, poe, '-r', linewidth = 2, label = ref)
+            pyplot.plot(loss, poe, '-', color='IndianRed', linewidth = 2, label = ref)
         pyplot.title('Loss curve (' + metadata['lossType'] + ' losses)', fontsize = 20)
         pyplot.legend(loc = "upper right", bbox_to_anchor = (1,1))
         pyplot.xlabel('Loss (' + metadata['unit'] + ')', fontsize = 16)
