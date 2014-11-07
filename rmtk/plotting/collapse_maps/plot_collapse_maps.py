@@ -61,9 +61,13 @@ def define_bounding_box(bounding_box,data):
     if bounding_box == 0:
         maxCoordinates = locations.max(axis=0)
         minCoordinates = locations.min(axis=0)
-	lengthLon = abs(maxCoordinates[0]-minCoordinates[0])
-	lengthLat = abs(maxCoordinates[1]-minCoordinates[1])
+    else:
+        maxCoordinates = [bounding_box[2],bounding_box[3]]
+        minCoordinates = [bounding_box[0],bounding_box[1]]
 
+    lengthLon = abs(maxCoordinates[0]-minCoordinates[0])
+    lengthLat = abs(maxCoordinates[1]-minCoordinates[1])
+	  
     box["lon_0"] = (minCoordinates[0]+maxCoordinates[0])/2
     box["lat_0"] = (minCoordinates[1]+maxCoordinates[1])/2
     box["lon_1"] = minCoordinates[0]-0.1*lengthLon
