@@ -132,12 +132,12 @@ def parse_risk_maps(nrml_loss_map,agg_losses,save_flag):
 	Writes the Loss map set to csv
 	'''
 	values = LossMapParser(nrml_loss_map)
+	agg_values = []
 	if save_flag:
 		output_file = open(nrml_loss_map.replace('xml','csv'),'w')        
-		for inode in range(len(values)):
-			for iasset in range(len(values[inode])):
-				output_file.write(values[inode][iasset][0]+','+str(values[inode][iasset][1])+','+
-					str(values[inode][iasset][2])+','+str(values[inode][iasset][3])+'\n')
+		for iasset in range(len(values)):
+			output_file.write(values[iasset][0]+','+str(values[iasset][1])+','+
+				str(values[iasset][2])+','+str(values[iasset][3])+'\n')
 		output_file.close()
 
 	if agg_losses:
@@ -148,9 +148,7 @@ def parse_risk_maps(nrml_loss_map,agg_losses,save_flag):
 				agg_output_file.write(str(agg_values[0][iloc])+','+str(agg_values[1][iloc])+'\n')
 			agg_output_file.close()
 
-		return values, agg_values
-	else:
-		return values
+	return values, agg_values
 
 def set_up_arg_parser():
     """
