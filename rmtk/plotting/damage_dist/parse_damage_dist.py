@@ -18,49 +18,73 @@ def parse_single_damage_dist(element):
     Reads the dmgDist element to return the longitude, latitude and 
     poes and losses
     '''
+    taxonomy = ''
+    damage_dist = {}
     for e in element.iter():
-        ref = element.attrib.get('assetRef')
-        if e.tag == '%spos' % xmlGML:
-            coords = str(e.text).split()
-            lon = float(coords[0])
-            lat = float(coords[1])
-        elif e.tag == '%spoEs' % xmlNRML:
-            poes = str(e.text).split()
-            poes = map(float, poes)
-        elif e.tag == '%slosses' % xmlNRML:
-            losses = str(e.text).split()
-            losses = map(float, losses)
+        if e.tag == '%staxonomy' % xmlNRML:
+            taxonomy = str(e.text)
+        elif e.tag == '%sdamage' % xmlNRML:
+            ds = e.attrib.get('ds')
+            mean = float(e.attrib.get('mean'))
+            stddev = float(e.attrib.get('stddev'))
+            damage_dist[ds] = (mean, stddev)
         else:
             continue
-    return lon, lat, ref, poes, losses
+    return taxonomy, damage_dist
 
-
-def parse_damage_states(element):
+def parse_dmg_dist_total(element):
     '''
-    Returns the statistics
+    Returns the list of damage states and statistics for each damage state
     '''
-    damage_states = {}
-    damage_states = element.attrib.get('damageStates')
-    return damage_states
+    damage_states = []
+    damage_dist = {}
+    for e in element.iter():
+        if e.tag == '%sdamageStates' % xmlNRML:
+            damage_states = str(e.text).split()
+        elif e.tag == '%sdamage' % xmlNRML:
+            ds = e.attrib.get('ds')
+            mean = float(e.attrib.get('mean'))
+            stddev = float(e.attrib.get('stddev'))
+            damage_dist[ds] = (mean, stddev)
+        else:
+            continue
+    return damage_states, damage_dist
 
+def parse_dmg_dist_tax(element):
+    taxonomies = []
+    damage_states = []
+    damage_dist_tax = {}
+    for e in element.iter():
+        if e.tag == '%sdamageStates' % xmlNRML:
+            damage_states = str(e.text).split()
+        elif e.tag == '%sDDNode' % xmlNRML:
+            taxonomy, damage_dist = parse_single_damage_dist(e)
+            taxonomies.append(taxonomy)
+            damage_dist_tax[taxonomy] = damage_dist
+        else:
+            continue
+    return taxonomies, damage_states, damage_dist_tax
 
 def parse_damage_file(input_file):
     '''
     Reads an xml damage dist file and returns a dictionary with
     taxonomies as keys and (mean[ds], stddev[ds]) as values
     '''
-    damage_states = {}
     taxonomies = []
+    damage_states = []
+    damage_dist = {}
+    damage_dist_tax = {}
     for _, element in etree.iterparse(input_file):
-        if element.tag == '%sdamageStates' % xmlNRML:
-            damage_states = str(element.text).split()
-        elif element.tag == '%slossCurve' % xmlNRML:
-            lon, lat, ref, poe, loss = parse_single_damage_dist(element)
-            asset_refs.append(ref)
-            damage_dists[ref] = loss, poe
+        if element.tag == '%stotalDmgDist' % xmlNRML:
+            taxonomy = 'All taxonomies'
+            taxonomies.append(taxonomy)
+            damage_states, damage_dist = parse_dmg_dist_total(element)
+            damage_dist_tax[taxonomy] = damage_dist
+        elif element.tag == '%sdmgDistPerTaxonomy' % xmlNRML:
+            taxonomies, damage_states, damage_dist_tax = parse_dmg_dist_tax(element)
         else:
             continue
-    return damage_states, asset_refs, damage_dists
+    return taxonomies, damage_states, damage_dist_tax
 
 
 def set_up_arg_parser():
