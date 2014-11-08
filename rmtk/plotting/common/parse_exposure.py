@@ -92,7 +92,6 @@ def set_up_arg_parser():
     parser = argparse.ArgumentParser(
         description='Extract list of taxonomies from NRML vulnerability models file'
             ' .txt files. Inside the specified output directory, create a .txt '
-            'file for each stochastic event set.'
             'To run just type: python parse_vulnerability.py '
             '--input-file=PATH_TO_VULNERABILITY_MODEL_NRML_FILE ', add_help=False)
     flags = parser.add_argument_group('flag arguments')

@@ -155,9 +155,8 @@ def set_up_arg_parser():
     Can run as executable. To do so, set up the command line parser
     """
     parser = argparse.ArgumentParser(
-        description='Convert NRML loss maps file to tab delimited '
+        description='Convert NRML loss maps file to comma delimited '
             ' .txt files. Inside the specified output directory, create a .txt '
-            'file for each stochastic event set.'
             'To run just type: python parse_loss_maps.py '
             '--input-file=PATH_TO_LOSS_MAP_NRML_FILE '
             'include --agg-losses if you wish to aggregate the losses per location '

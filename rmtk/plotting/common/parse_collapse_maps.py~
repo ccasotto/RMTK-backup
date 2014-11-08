@@ -121,7 +121,7 @@ def parse_collapse_maps(nrml_collapse_map,agg_collapses,save_flag):
 		if save_flag:
 			agg_output_file = open(nrml_collapse_map.replace('xml','_agg.csv'),'w')
 			for iloc in range(len(agg_values[0])):
-				agg_output_file.write(str(agg_values[0][iloc])+','+str(agg_values[1][iloc])+'\n')
+				agg_output_file.write(str(agg_values[0][iloc][0])+','+str(agg_values[0][iloc][1])+','+str(agg_values[1][iloc])+'\n')
 			agg_output_file.close()
 
 	return values, agg_values

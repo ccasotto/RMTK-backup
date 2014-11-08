@@ -110,10 +110,13 @@ def captureRuptures(losses,rateOfExceedance,ses,event_loss_table,return_periods,
     annual_rate_exc = 1.0/np.array(return_periods)
     ruptures = []
     for rate in annual_rate_exc:
-        diff = np.abs(rateOfExceedance-rate)
-        idx = diff.argsort()[0:rups_for_return_period]
-        ruptures.append(selectSubRuptures(idx,losses,event_loss_table,ses))
-  
+        if rate > min(rateOfExceedance):
+            diff = np.abs(rateOfExceedance-rate)
+            idx = diff.argsort()[0:rups_for_return_period]
+            ruptures.append(selectSubRuptures(idx,losses,event_loss_table,ses))
+        else:
+            print 'Return period of %.0f' % round(1/rate)+' years is above the time length of the stochastic event set.'
+
     return ruptures
 
 def selectSubRuptures(idx,losses,event_loss_table,ses):
@@ -133,8 +136,9 @@ def plotCurves(losses,rateOfExceedance,return_periods,lossLevels):
     if len(return_periods) > 0:
         annual_rate_exc = 1.0/np.array(return_periods)
         for rate in annual_rate_exc:
-            plt.plot([min(losses),max(losses)],[rate,rate],color='red') 
-            plt.annotate('%.6f' % rate,xy=(max(losses),rate),fontsize = 12)
+            if rate > min(rateOfExceedance):
+                plt.plot([min(losses),max(losses)],[rate,rate],color='red') 
+                plt.annotate('%.6f' % rate,xy=(max(losses),rate),fontsize = 12)
 
     plt.yscale('log')
     plt.xscale('log')
@@ -148,8 +152,9 @@ def plotCurves(losses,rateOfExceedance,return_periods,lossLevels):
     plt.scatter(setReturnPeriods,losses,s=20)
     if len(return_periods) > 0:
         for period in return_periods:
-            plt.plot([period,period],[min(losses),max(losses)],color='red') 
-            plt.annotate(str(period),xy=(period,max(losses)),fontsize = 12)
+            if period < max(setReturnPeriods):
+                plt.plot([period,period],[min(losses),max(losses)],color='red') 
+                plt.annotate(str(period),xy=(period,max(losses)),fontsize = 12)
 
     plt.xscale('log')
     plt.xlim([min(setReturnPeriods),max(setReturnPeriods)])
@@ -161,20 +166,25 @@ def estimateLossStatistics(losses,rateOfExceedance,investigationTime,total_cost,
 
     maxLoss = losses[0]
     aal = sum(losses)/investigationTime
-    aalr = aal/total_cost
+    aalr = aal/total_cost*100
     lossLevels = []
     print 'Maximum loss:'
     print maxLoss
     print 'Average annual loss:'
     print aal
+    print 'Average annual loss ratio (%):'
+    print aalr
 
     if len(return_periods) > 0:
         annual_rate_exc = 1.0/np.array(return_periods)
         for i in range(len(annual_rate_exc)):
-            idx = find_nearest(rateOfExceedance,annual_rate_exc[i])
-            lossLevels.append(losses[idx])
-            print 'Loss for a return period of '+str(return_periods[i])+' years.'
-            print losses[idx]
+            if annual_rate_exc[i] > min(rateOfExceedance):
+                idx = find_nearest(rateOfExceedance,annual_rate_exc[i])
+                lossLevels.append(losses[idx])
+                print 'Loss for a return period of '+str(return_periods[i])+' years.'
+                print losses[idx]
+            else:
+                print 'Return period of '+str(return_periods[i])+' years is above the time length of the stochastic event set.'
 
     return maxLoss, aal, aalr, lossLevels
 

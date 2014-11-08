@@ -81,10 +81,11 @@ def parsePlanarSurface(element):
 def parse_ses_single_file(singleFile):
 
     ses = []
+    investigationTime = 0.0
 
     for _, element in etree.iterparse(singleFile):
         if element.tag == '%sstochasticEventSet' % xmlNRML:
-            investigationTime = element.attrib.get('investigationTime')
+            investigationTime = investigationTime + float(element.attrib.get('investigationTime'))
         elif element.tag == '%srupture' % xmlNRML:
             rupId = element.attrib.get('id')
             mag = element.attrib.get('magnitude')

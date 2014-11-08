@@ -81,10 +81,11 @@ def parsePlanarSurface(element):
 def parse_ses_single_file(singleFile):
 
     ses = []
+    investigationTime = 0.
 
     for _, element in etree.iterparse(singleFile):
         if element.tag == '%sstochasticEventSet' % xmlNRML:
-            investigationTime = element.attrib.get('investigationTime')
+            investigationTime = investigationTime + float(element.attrib.get('investigationTime'))
         elif element.tag == '%srupture' % xmlNRML:
             rupId = element.attrib.get('id')
             mag = element.attrib.get('magnitude')
@@ -104,7 +105,7 @@ def parse_ses(folder_ses,save_flag):
 	Writes the ses to csv
 	'''
 	ses = []
-	investigationTime = 0
+	investigationTime = 0.0
 
 	ses_files = [x for x in os.listdir(folder_ses) if x[-4:] == '.xml']
 
@@ -112,7 +113,7 @@ def parse_ses(folder_ses,save_flag):
 		time, subSetSES = parse_ses_single_file(folder_ses+'/'+singleFile)
 		for setSES in subSetSES:
 			ses.append(setSES)
-		investigationTime = investigationTime + time
+		investigationTime = investigationTime + float(time)
 
 	if save_flag:
 		output_file = open(folder_ses+'.csv','w')        
