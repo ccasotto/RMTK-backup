@@ -44,6 +44,7 @@ Convert exposure model csv files to xml.
 
 import os
 import csv
+import math
 import argparse
 import pandas as pd
 from lxml import etree
@@ -58,7 +59,7 @@ def csv_to_xml(input_csv, metadata_csv, output_xml):
     """
     metadata = {}
     data = pd.io.parsers.read_csv(input_csv)
-    with open(metadata_csv, 'rb') as f:
+    with open(metadata_csv, 'rU') as f:
         reader = csv.reader(f)
         for row in reader:
             metadata[row[0]] = row[1]
@@ -80,19 +81,24 @@ def csv_to_xml(input_csv, metadata_csv, output_xml):
         node_cost_type_s.set("name", "structural")
         node_cost_type_s.set("type", metadata['structural_cost_aggregation_type'])
         node_cost_type_s.set("unit", metadata['structural_cost_currency'])
-        node_cost_type_ns = etree.SubElement(node_cost_types, "costType")
-        node_cost_type_ns.set("name", "nonstructural")
-        node_cost_type_ns.set("type", metadata['nonstructural_cost_aggregation_type'])
-        node_cost_type_ns.set("unit", metadata['nonstructural_cost_currency'])
-        node_cost_type_c = etree.SubElement(node_cost_types, "costType")
-        node_cost_type_c.set("name", "contents")
-        node_cost_type_c.set("type", metadata['contents_cost_aggregation_type'])
-        node_cost_type_c.set("unit", metadata['contents_cost_currency'])
 
-        node_deductible = etree.SubElement(node_conv, "deductible")
-        node_deductible.set("isAbsolute", metadata['insurance_deductible_is_absolute'].lower())
-        node_limit= etree.SubElement(node_conv, "insuranceLimit")
-        node_limit.set("isAbsolute", metadata['insurance_limit_is_absolute'].lower())
+        if metadata['nonstructural_cost_aggregation_type']:
+            node_cost_type_ns = etree.SubElement(node_cost_types, "costType")
+            node_cost_type_ns.set("name", "nonstructural")
+            node_cost_type_ns.set("type", metadata['nonstructural_cost_aggregation_type'])
+            node_cost_type_ns.set("unit", metadata['nonstructural_cost_currency'])
+        if metadata['contents_cost_aggregation_type']:
+            node_cost_type_c = etree.SubElement(node_cost_types, "costType")
+            node_cost_type_c.set("name", "contents")
+            node_cost_type_c.set("type", metadata['contents_cost_aggregation_type'])
+            node_cost_type_c.set("unit", metadata['contents_cost_currency'])
+
+        if metadata['insurance_deductible_is_absolute']:
+            node_deductible = etree.SubElement(node_conv, "deductible")
+            node_deductible.set("isAbsolute", metadata['insurance_deductible_is_absolute'].lower())
+        if metadata['insurance_limit_is_absolute']:
+            node_limit= etree.SubElement(node_conv, "insuranceLimit")
+            node_limit.set("isAbsolute", metadata['insurance_limit_is_absolute'].lower())
 
         node_assets = etree.SubElement(node_em, "assets")
         for row_index, row in data.iterrows():
@@ -108,46 +114,65 @@ def csv_to_xml(input_csv, metadata_csv, output_xml):
 
             node_costs = etree.SubElement(node_asset, "costs")
 
-            node_cost_s = etree.SubElement(node_costs, "cost")
-            node_cost_s.set("type", 'structural')
-            node_cost_s.set("value", str(row['structural_replacement_cost']))
-            node_cost_s.set("deductible", str(row['structural_insurance_deductible']))
-            node_cost_s.set("insuranceLimit", str(row['structural_insurance_limit']))
-            node_cost_s.set("retrofitted", str(row['structural_retrofit_cost']))
+            if not math.isnan(row['structural_replacement_cost']):
+                node_cost_s = etree.SubElement(node_costs, "cost")
+                node_cost_s.set("type", 'structural')
+                node_cost_s.set("value", str(row['structural_replacement_cost']))
+            if not math.isnan(row['structural_insurance_deductible']):
+                node_cost_s.set("deductible", str(row['structural_insurance_deductible']))
+            if not math.isnan(row['structural_insurance_limit']):
+                node_cost_s.set("insuranceLimit", str(row['structural_insurance_limit']))
+            if not math.isnan(row['structural_retrofit_cost']):
+                node_cost_s.set("retrofitted", str(row['structural_retrofit_cost']))
 
-            node_cost_ns = etree.SubElement(node_costs, "cost")
-            node_cost_ns.set("type", 'nonstructural')
-            node_cost_ns.set("value", str(row['nonstructural_replacement_cost']))
-            node_cost_ns.set("deductible", str(row['nonstructural_insurance_deductible']))
-            node_cost_ns.set("insuranceLimit", str(row['nonstructural_insurance_limit']))
-            node_cost_ns.set("retrofitted", str(row['nonstructural_retrofit_cost']))
+            if not math.isnan(row['nonstructural_replacement_cost']):
+                node_cost_ns = etree.SubElement(node_costs, "cost")
+                node_cost_ns.set("type", 'nonstructural')
+                node_cost_ns.set("value", str(row['nonstructural_replacement_cost']))
+            if not math.isnan(row['nonstructural_insurance_deductible']):
+                node_cost_ns.set("deductible", str(row['nonstructural_insurance_deductible']))
+            if not math.isnan(row['nonstructural_insurance_limit']):
+                node_cost_ns.set("insuranceLimit", str(row['nonstructural_insurance_limit']))
+            if not math.isnan(row['nonstructural_retrofit_cost']):
+                node_cost_ns.set("retrofitted", str(row['nonstructural_retrofit_cost']))
 
-            node_cost_c = etree.SubElement(node_costs, "cost")
-            node_cost_c.set("type", 'contents')
-            node_cost_c.set("value", str(row['contents_replacement_cost']))
-            node_cost_c.set("deductible", str(row['contents_insurance_deductible']))
-            node_cost_c.set("insuranceLimit", str(row['contents_insurance_limit']))
-            node_cost_c.set("retrofitted", str(row['contents_retrofit_cost']))
+            if not math.isnan(row['contents_replacement_cost']):
+                node_cost_c = etree.SubElement(node_costs, "cost")
+                node_cost_c.set("type", 'contents')
+                node_cost_c.set("value", str(row['contents_replacement_cost']))
+            if not math.isnan(row['contents_insurance_deductible']):
+                node_cost_c.set("deductible", str(row['contents_insurance_deductible']))
+            if not math.isnan(row['contents_insurance_limit']):
+                node_cost_c.set("insuranceLimit", str(row['contents_insurance_limit']))
+            if not math.isnan(row['contents_retrofit_cost']):
+                node_cost_c.set("retrofitted", str(row['contents_retrofit_cost']))
 
-            node_cost_d = etree.SubElement(node_costs, "cost")
-            node_cost_d.set("type", 'downtime')
-            node_cost_d.set("value", str(row['downtime_cost']))
-            node_cost_d.set("deductible", str(row['downtime_insurance_deductible']))
-            node_cost_d.set("insuranceLimit", str(row['downtime_insurance_limit']))
+            if not math.isnan(row['downtime_cost']):
+                node_cost_d = etree.SubElement(node_costs, "cost")
+                node_cost_d.set("type", 'downtime')
+                node_cost_d.set("value", str(row['downtime_cost']))
+            if not math.isnan(row['downtime_insurance_deductible']):
+                node_cost_d.set("deductible", str(row['downtime_insurance_deductible']))
+            if not math.isnan(row['downtime_insurance_limit']):
+                node_cost_d.set("insuranceLimit", str(row['downtime_insurance_limit']))
 
-            node_occupancies = etree.SubElement(node_asset, "occupancies")
+            if not math.isnan(row['day_occupants']) or math.isnan(row['night_occupants']) or math.isnan(row['transit_occupants']):
+                node_occupancies = etree.SubElement(node_asset, "occupancies")
 
-            node_occ_day = etree.SubElement(node_occupancies, "occupancy")
-            node_occ_day.set("period", 'day')
-            node_occ_day.set("occupants", str(row['day_occupants']))
+                if not math.isnan(row['day_occupants']):
+                    node_occ_day = etree.SubElement(node_occupancies, "occupancy")
+                    node_occ_day.set("period", 'day')
+                    node_occ_day.set("occupants", str(row['day_occupants']))
 
-            node_occ_night = etree.SubElement(node_occupancies, "occupancy")
-            node_occ_night.set("period", 'night')
-            node_occ_night.set("occupants", str(row['night_occupants']))
+                if not math.isnan(row['night_occupants']):
+                    node_occ_night = etree.SubElement(node_occupancies, "occupancy")
+                    node_occ_night.set("period", 'night')
+                    node_occ_night.set("occupants", str(row['night_occupants']))
 
-            node_occ_transit = etree.SubElement(node_occupancies, "occupancy")
-            node_occ_transit.set("period", 'transit')
-            node_occ_transit.set("occupants", str(row['transit_occupants']))
+                if not math.isnan(row['transit_occupants']):
+                    node_occ_transit = etree.SubElement(node_occupancies, "occupancy")
+                    node_occ_transit.set("period", 'transit')
+                    node_occ_transit.set("occupants", str(row['transit_occupants']))
 
         f.write(etree.tostring(root, pretty_print=True, xml_declaration=True, encoding='UTF-8'))
 
