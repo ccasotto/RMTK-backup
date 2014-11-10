@@ -39,7 +39,7 @@
 # The GEM Foundation, and the authors of the software, assume no liability for
 # use of the software.
 """
-Convert vulnerability model csv files to xml.
+Convert exposure model csv files to xml.
 """
 
 import os
@@ -54,58 +54,103 @@ SERIALIZE_NS_MAP = {None: NAMESPACE, 'gml': GML_NAMESPACE}
 
 def csv_to_xml(input_csv, metadata_csv, output_xml):
     """
-    Converts the CSV fragility model file to the NRML format
+    Converts the CSV exposure model file to the NRML format
     """
     metadata = {}
-    with open(metadata_csv, 'rU') as f:
+    data = pd.io.parsers.read_csv(input_csv)
+    with open(metadata_csv, 'rb') as f:
         reader = csv.reader(f)
         for row in reader:
             metadata[row[0]] = row[1]
-    metadata['limitStates'] = metadata['limitStates'].split('; ')
 
-    data = pd.io.parsers.read_csv(input_csv)
-    grouped_by_tax = data.groupby('taxonomy')
-    frag_model = {}
+    with open(output_xml, "w") as f:
+        root = etree.Element('nrml', nsmap=SERIALIZE_NS_MAP)
+        node_em = etree.SubElement(root, "exposureModel")
+        node_em.set("id", metadata['id'])
+        node_em.set("category", metadata['category'])
+        node_em.set("taxonomySource", metadata['taxonomy_source'])
 
-    for taxonomy, group in grouped_by_tax:
-        frag_model[taxonomy] = {}
-        frag_model[taxonomy]['noDamageLimit'] = str(group['noDamageLimit'].tolist()[0])
-        frag_model[taxonomy]['iml_unit'] = group['iml_unit'].tolist()[0]
-        frag_model[taxonomy]['imt'] = group['imt'].tolist()[0]
-        frag_model[taxonomy]['iml'] = group['iml'].tolist()
+        node_desc = etree.SubElement(node_em, "description")
+        node_desc.text = metadata['description']
 
-        frag_func = {}
-        for ls in metadata['limitStates']:
-            frag_func[ls] = group[ls].tolist()
+        node_conv = etree.SubElement(node_em, "conversions")
+        node_cost_types = etree.SubElement(node_conv, "costTypes")
 
-        frag_model[taxonomy]['function'] = frag_func
+        node_cost_type_s = etree.SubElement(node_cost_types, "costType")
+        node_cost_type_s.set("name", "structural")
+        node_cost_type_s.set("type", metadata['structural_cost_aggregation_type'])
+        node_cost_type_s.set("unit", metadata['structural_cost_currency'])
+        node_cost_type_ns = etree.SubElement(node_cost_types, "costType")
+        node_cost_type_ns.set("name", "nonstructural")
+        node_cost_type_ns.set("type", metadata['nonstructural_cost_aggregation_type'])
+        node_cost_type_ns.set("unit", metadata['nonstructural_cost_currency'])
+        node_cost_type_c = etree.SubElement(node_cost_types, "costType")
+        node_cost_type_c.set("name", "contents")
+        node_cost_type_c.set("type", metadata['contents_cost_aggregation_type'])
+        node_cost_type_c.set("unit", metadata['contents_cost_currency'])
 
-        with open(output_xml, "w") as f:
-            root = etree.Element('nrml', nsmap=SERIALIZE_NS_MAP)
-            node_fm = etree.SubElement(root, "fragilityModel")
-            node_desc = etree.SubElement(node_fm, "description")
-            node_desc.text = metadata['description']
-            node_ls = etree.SubElement(node_fm, "limitStates")
-            node_ls.text = " ".join(map(str, metadata['limitStates']))
+        node_deductible = etree.SubElement(node_conv, "deductible")
+        node_deductible.set("isAbsolute", metadata['insurance_deductible_is_absolute'].lower())
+        node_limit= etree.SubElement(node_conv, "insuranceLimit")
+        node_limit.set("isAbsolute", metadata['insurance_limit_is_absolute'].lower())
 
-            for taxonomy, frag_func_set in frag_model.iteritems():
-                node_ffs = etree.SubElement(node_fm, "ffs")
-                node_ffs.set("noDamageLimit", frag_func_set['noDamageLimit'])
-                node_tax = etree.SubElement(node_ffs, "taxonomy")
-                node_tax.text = taxonomy
-                node_iml = etree.SubElement(node_ffs, "IML")
-                node_iml.set("IMT", frag_func_set['imt'])
-                node_iml.set("iml_unit", frag_func_set['iml_unit'])
-                node_iml.text = " ".join(map(str, frag_func_set['iml']))
+        node_assets = etree.SubElement(node_em, "assets")
+        for row_index, row in data.iterrows():
+            node_asset = etree.SubElement(node_assets, "asset")
+            node_asset.set("id", str(row['asset_id']))
+            node_asset.set("number", str(row['num_buildings']))
+            node_asset.set("area", str(row['built_up_area']))
+            node_asset.set("taxonomy", str(row['taxonomy']))
 
-                frag_func = frag_func_set['function']
-                for ls in metadata['limitStates']:
-                    node_ffd = etree.SubElement(node_ffs, "ffd")
-                    node_ffd.set("ls", ls)
-                    node_poes = etree.SubElement(node_ffd, "poEs")
-                    node_poes.text = " ".join(map(str, frag_func[ls]))
+            node_location = etree.SubElement(node_asset, "location")
+            node_location.set("lon", str(row['longitude']))
+            node_location.set("lat", str(row['latitude']))
 
-            f.write(etree.tostring(root, pretty_print=True, xml_declaration=True, encoding='UTF-8'))
+            node_costs = etree.SubElement(node_asset, "costs")
+
+            node_cost_s = etree.SubElement(node_costs, "cost")
+            node_cost_s.set("type", 'structural')
+            node_cost_s.set("value", str(row['structural_replacement_cost']))
+            node_cost_s.set("deductible", str(row['structural_insurance_deductible']))
+            node_cost_s.set("insuranceLimit", str(row['structural_insurance_limit']))
+            node_cost_s.set("retrofitted", str(row['structural_retrofit_cost']))
+
+            node_cost_ns = etree.SubElement(node_costs, "cost")
+            node_cost_ns.set("type", 'nonstructural')
+            node_cost_ns.set("value", str(row['nonstructural_replacement_cost']))
+            node_cost_ns.set("deductible", str(row['nonstructural_insurance_deductible']))
+            node_cost_ns.set("insuranceLimit", str(row['nonstructural_insurance_limit']))
+            node_cost_ns.set("retrofitted", str(row['nonstructural_retrofit_cost']))
+
+            node_cost_c = etree.SubElement(node_costs, "cost")
+            node_cost_c.set("type", 'contents')
+            node_cost_c.set("value", str(row['contents_replacement_cost']))
+            node_cost_c.set("deductible", str(row['contents_insurance_deductible']))
+            node_cost_c.set("insuranceLimit", str(row['contents_insurance_limit']))
+            node_cost_c.set("retrofitted", str(row['contents_retrofit_cost']))
+
+            node_cost_d = etree.SubElement(node_costs, "cost")
+            node_cost_d.set("type", 'downtime')
+            node_cost_d.set("value", str(row['downtime_cost']))
+            node_cost_d.set("deductible", str(row['downtime_insurance_deductible']))
+            node_cost_d.set("insuranceLimit", str(row['downtime_insurance_limit']))
+
+            node_occupancies = etree.SubElement(node_asset, "occupancies")
+
+            node_occ_day = etree.SubElement(node_occupancies, "occupancy")
+            node_occ_day.set("period", 'day')
+            node_occ_day.set("occupants", str(row['day_occupants']))
+
+            node_occ_night = etree.SubElement(node_occupancies, "occupancy")
+            node_occ_night.set("period", 'night')
+            node_occ_night.set("occupants", str(row['night_occupants']))
+
+            node_occ_transit = etree.SubElement(node_occupancies, "occupancy")
+            node_occ_transit.set("period", 'transit')
+            node_occ_transit.set("occupants", str(row['transit_occupants']))
+
+        f.write(etree.tostring(root, pretty_print=True, xml_declaration=True, encoding='UTF-8'))
+
 
 def xml_to_csv (input_xml, output_csv):
     """
@@ -119,15 +164,15 @@ def set_up_arg_parser():
     Can run as executable. To do so, set up the command line parser
     """
 
-    description = ('Convert a Fragility Model from CSV to XML and '
+    description = ('Convert an Exposure Model from CSV to XML and '
                    'vice versa.\n\nTo convert from CSV to XML: '
-                   '\npython fragility_model_converter.py '
-                   '--input-csv-file PATH_TO_FRAGILITY_MODEL_CSV_FILE '
-                   '--metadata-csv-file PATH_TO_FRAGILITY_METADATA_CSV_FILE '
+                   '\npython exposure_model_converter.py '
+                   '--input-csv-file PATH_TO_EXPOSURE_MODEL_CSV_FILE '
+                   '--metadata-csv-file PATH_TO_EXPOSURE_METADATA_CSV_FILE '
                    '--output-xml-file PATH_TO_OUTPUT_XML_FILE'
                    '\n\nTo convert from XML to CSV type: '
-                   '\npython fragility_model_converter.py '
-                   '--input-xml-file PATH_TO_FRAGILITY_MODEL_XML_FILE '
+                   '\npython exposure_model_converter.py '
+                   '--input-xml-file PATH_TO_EXPOSURE_MODEL_XML_FILE '
                    '--output-csv-file PATH_TO_OUTPUT_CSV_FILE')
 
     parser = argparse.ArgumentParser(description=description, formatter_class=argparse.RawTextHelpFormatter)
@@ -136,13 +181,13 @@ def set_up_arg_parser():
     group_input = flags.add_argument_group('input files')
     group_input_choice = group_input.add_mutually_exclusive_group(required=True)
     group_input_choice.add_argument('--input-xml-file',
-                       help='path to fragility model XML file',
+                       help='path to exposure model XML file',
                        default=None)
     group_input_choice.add_argument('--input-csv-file',
-                       help='path to fragility model CSV file',
+                       help='path to exposure model CSV file',
                        default=None)
     group_input.add_argument('--metadata-csv-file',
-                       help='path to fragility metadata CSV file',
+                       help='path to exposure metadata CSV file',
                        default=None,
                        required=True)
 
