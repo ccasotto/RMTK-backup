@@ -39,7 +39,7 @@
 # The GEM Foundation, and the authors of the software, assume no liability for
 # use of the software.
 """
-Convert fragility model csv files to xml.
+Convert vulnerability model csv files to xml.
 """
 
 import os
