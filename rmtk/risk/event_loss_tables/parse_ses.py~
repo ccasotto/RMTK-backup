@@ -81,7 +81,7 @@ def parsePlanarSurface(element):
 def parse_ses_single_file(singleFile):
 
     ses = []
-    investigationTime = 0.0
+    investigationTime = 0.
 
     for _, element in etree.iterparse(singleFile):
         if element.tag == '%sstochasticEventSet' % xmlNRML:

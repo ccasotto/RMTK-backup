@@ -110,6 +110,8 @@ def captureRuptures(losses,rateOfExceedance,ses,event_loss_table,return_periods,
     annual_rate_exc = 1.0/np.array(return_periods)
     ruptures = []
     for rate in annual_rate_exc:
+        print rate
+        print min(rateOfExceedance)
         if rate > min(rateOfExceedance):
             diff = np.abs(rateOfExceedance-rate)
             idx = diff.argsort()[0:rups_for_return_period]

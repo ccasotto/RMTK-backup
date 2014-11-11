@@ -143,9 +143,9 @@ def parse_risk_maps(nrml_loss_map,agg_losses,save_flag):
 	if agg_losses:
 		agg_values = aggLossMapLosses(values)
 		if save_flag:
-			agg_output_file = open(nrml_loss_map.replace('xml','_agg.csv'),'w')
+			agg_output_file = open(nrml_loss_map.replace('.xml','_agg.csv'),'w')
 			for iloc in range(len(agg_values[0])):
-				agg_output_file.write(str(agg_values[0][iloc])+','+str(agg_values[1][iloc])+'\n')
+				agg_output_file.write(str(agg_values[0][iloc][0])+','+str(agg_values[0][iloc][1])+','+str(agg_values[1][iloc])+'\n')
 			agg_output_file.close()
 
 	return values, agg_values
@@ -155,9 +155,8 @@ def set_up_arg_parser():
     Can run as executable. To do so, set up the command line parser
     """
     parser = argparse.ArgumentParser(
-        description='Convert NRML loss maps file to tab delimited '
+        description='Convert NRML loss maps file to comma delimited '
             ' .txt files. Inside the specified output directory, create a .txt '
-            'file for each stochastic event set.'
             'To run just type: python parse_loss_maps.py '
             '--input-file=PATH_TO_LOSS_MAP_NRML_FILE '
             'include --agg-losses if you wish to aggregate the losses per location '

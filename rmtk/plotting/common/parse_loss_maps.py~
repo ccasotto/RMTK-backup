@@ -44,7 +44,7 @@
 # liability for use of the software.
 # -*- coding: utf-8 -*-
 '''
-Post-process risk calculation data to convert collapse maps into different
+Post-process risk calculation data to convert loss maps into different
 formats
 '''
 
@@ -58,10 +58,10 @@ from collections import OrderedDict
 xmlNRML='{http://openquake.org/xmlns/nrml/0.4}'
 xmlGML = '{http://www.opengis.net/gml}'
 
-def parse_single_collapse_node(element):
+def parse_single_loss_node(element):
     '''
-    Reads the collapse map node element to return the longitude, latitude and 
-    asset ref and collapses
+    Reads the loss map node element to return the longitude, latitude and 
+    asset ref and losses
     '''
     values = []
     
@@ -70,56 +70,80 @@ def parse_single_collapse_node(element):
             coords = str(e.text).split()
             lon = float(coords[0])
             lat = float(coords[1])
-        elif e.tag == '%scf' % xmlNRML:
+        elif e.tag == '%sloss' % xmlNRML:
             ref = e.attrib.get('assetRef')
-            collapses = e.attrib.get('mean')
-            values.append([ref,lon,lat,float(collapses)])
+            if e.attrib.get('value') is None:
+                loss = e.attrib.get('mean')
+            else:
+                loss = e.attrib.get('value')
+            values.append([ref,lon,lat,float(loss)])
+        else:
+            continue
             
     return values
 
-def collapse_map_parser(input_file):
+def parse_metadata(element):
+    '''
+    Returns the statistics
+    '''
+    meta_info = {}
+    meta_info['statistics'] = element.attrib.get('statistics')
+    meta_info['quantile_value'] = element.attrib.get('quantileValue')
+    meta_info['investigationTime'] = element.attrib.get('investigationTime')
+    meta_info['unit'] = element.attrib.get('unit')
+    meta_info['sourceModelTreePath'] = element.attrib.get('sourceModelTreePath')
+    meta_info['gsimTreePath'] = element.attrib.get('gsimTreePath')
+    meta_info['lossCategory'] = element.attrib.get('lossCategory')
+    
+    return meta_info
+
+def LossMapParser(input_file):
 
     values = []
     meta_info = {}
 
     for _, element in etree.iterparse(input_file):
-        if element.tag == '%sCMNode' % xmlNRML:
-            subValues = parse_single_collapse_node(element)
+        if element.tag == '%slossMap' % xmlNRML:
+            meta_info = parse_metadata(element)
+        elif element.tag == '%snode' % xmlNRML:
+            subValues = parse_single_loss_node(element)
             for value in subValues:
                 values.append(value)
+        else:
+            continue
     
     return values
     
-def agg_collapse_map(values):
+def aggLossMapLosses(values):
     
     uniqueLocations = []
-    aggCollapses = []
+    agg_losses = []
     for value in values:
         if value[1:3] not in uniqueLocations:
             uniqueLocations.append(value[1:3])
-            aggCollapses.append(0)
+            agg_losses.append(0)
         idx = uniqueLocations.index(value[1:3])
-        aggCollapses[idx]=aggCollapses[idx]+float(value[3])
+        agg_losses[idx]=agg_losses[idx]+float(value[3])
         
-    return uniqueLocations, aggCollapses
+    return uniqueLocations, agg_losses
     
-def parse_collapse_maps(nrml_collapse_map,agg_collapses,save_flag):
+def parse_risk_maps(nrml_loss_map,agg_losses,save_flag):
 	'''
-	Writes the Collapse map set to csv
+	Writes the Loss map set to csv
 	'''
-	values = collapse_map_parser(nrml_collapse_map)
+	values = LossMapParser(nrml_loss_map)
 	agg_values = []
 	if save_flag:
-		output_file = open(nrml_collapse_map.replace('xml','csv'),'w')        
+		output_file = open(nrml_loss_map.replace('xml','csv'),'w')        
 		for iasset in range(len(values)):
 			output_file.write(values[iasset][0]+','+str(values[iasset][1])+','+
 				str(values[iasset][2])+','+str(values[iasset][3])+'\n')
 		output_file.close()
 
-	if agg_collapses:
-		agg_values = agg_collapse_map(values)
+	if agg_losses:
+		agg_values = aggLossMapLosses(values)
 		if save_flag:
-			agg_output_file = open(nrml_collapse_map.replace('xml','_agg.csv'),'w')
+			agg_output_file = open(nrml_loss_map.replace('xml','_agg.csv'),'w')
 			for iloc in range(len(agg_values[0])):
 				agg_output_file.write(str(agg_values[0][iloc][0])+','+str(agg_values[0][iloc][1])+','+str(agg_values[1][iloc])+'\n')
 			agg_output_file.close()
@@ -131,21 +155,21 @@ def set_up_arg_parser():
     Can run as executable. To do so, set up the command line parser
     """
     parser = argparse.ArgumentParser(
-        description='Convert NRML collapse maps file to comma delimited '
-            ' .txt files.'
-            'To run just type: python parse_collapse_maps.py '
-            '--input-file=PATH_TO_COLLAPSE_MAP_NRML_FILE '
-            'include --agg-collapses if you wish to aggregate the collapses per location '
+        description='Convert NRML loss maps file to comma delimited '
+            ' .txt files. Inside the specified output directory, create a .txt '
+            'To run just type: python parse_loss_maps.py '
+            '--input-file=PATH_TO_LOSS_MAP_NRML_FILE '
+            'include --agg-losses if you wish to aggregate the losses per location '
 			'include --save if you wish to save values into csv format' , add_help=False)
     flags = parser.add_argument_group('flag arguments')
     flags = parser.add_argument_group('flag arguments')
     flags.add_argument('-h', '--help', action='help')
     flags.add_argument('--input-file',
-        help='path to collapse map NRML file (Required)',
+        help='path to loss map NRML file (Required)',
         default=None,
         required=True)
-    flags.add_argument('--agg-collapses', action="store_true",
-        help='aggregates the collapses per location',
+    flags.add_argument('--agg-losses', action="store_true",
+        help='aggregates the losses per location',
         required=False)
     flags.add_argument('--save', action="store_true",
         help='saves values into csv',
@@ -159,4 +183,4 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     if args.input_file:
-        parse_collapse_maps(args.input_file,args.agg_collapses,args.save)
+        parse_risk_maps(args.input_file,args.agg_losses,args.save)

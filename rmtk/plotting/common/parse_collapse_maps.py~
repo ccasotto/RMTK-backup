@@ -131,8 +131,9 @@ def set_up_arg_parser():
     Can run as executable. To do so, set up the command line parser
     """
     parser = argparse.ArgumentParser(
-        description='Convert NRML collapse maps file to comma delimited '
-            ' .txt files.'
+        description='Convert NRML collapse maps file to tab delimited '
+            ' .txt files. Inside the specified output directory, create a .txt '
+            'file for each stochastic event set.'
             'To run just type: python parse_collapse_maps.py '
             '--input-file=PATH_TO_COLLAPSE_MAP_NRML_FILE '
             'include --agg-collapses if you wish to aggregate the collapses per location '
