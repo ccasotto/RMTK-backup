@@ -70,7 +70,7 @@ in_type = 0
 # <codecell>
 
 vuln = 0
-g = 9.81
+g = 981
 plotflag = [1, 1]
 iml = np.linspace(0.1, 400, 100)
 IMlabel = ['m/s$^{2}$']

@@ -69,7 +69,10 @@ def spo2ida(idacm, idacr, mf, T, Gamma, g, dcroof, SPO, bUthd, MC):
             allSa50 = [ele*Say for ele in RcapMC[1][i]]
             allbSa50 = (np.log(RcapMC[0][i])-np.log(RcapMC[2][i]))/2
             for j in range(0,MC):
-                realisation = stat.lognorm.ppf(xp,allbSa50[j],loc=0,scale=allSa50[j])
+                if allbSa50[j]>0:
+                    realisation = stat.lognorm.ppf(xp,allbSa50[j],loc=0,scale=allSa50[j])
+                else:
+                    realisation = np.repeat(allSa50[j],MC)
                 Sai[i].append(realisation)
     for i in range(0,len(mcroof)):
         if len(Sai[i])>0:

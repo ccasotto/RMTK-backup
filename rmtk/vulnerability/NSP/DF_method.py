@@ -80,7 +80,7 @@ def DFfragility(T, Gamma, drlim, SPO, buthd, mc, r, g, Tc, Td):
     R0=Rmc
     m0=mc
     if T<=Tc:
-        c=0.7*np.sqrt(r)*(T/Tc)^(1/np.sqrt(r))
+        c=0.7*np.sqrt(r)*np.power((T/Tc),(1/np.sqrt(r)))
     elif T<=Tdstar:
         c=0.7*np.sqrt(r)*(1-DT)+DT
     else:
